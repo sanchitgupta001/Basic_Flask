@@ -1,5 +1,8 @@
 from flask import Flask, render_template, flash, request, url_for, redirect
 from content_management import Content
+from wtforms import Form
+from dbConnect import connection
+from passlib.hash import sha256_crypt
 
 TOPIC_DICT = Content()
 
@@ -33,6 +36,14 @@ def Method_not_found(e):
 
 #####################################    LOGIN    #############################################
 
+class RegistrationForm():
+    username = TextField("Username", [validators.length(min = 6, max = 20),validators.Required()])
+    email = TextField("Email Address", [validators.length(min = 6, max = 60), validators.Required()])
+    password  = PasswordField("password", [validators.Required(),validators.EqualTo("confirm", message = "Passwords must match")])
+    confirm = PasswordField('Repeat Password')
+
+
+
 @app.route('/login/',methods=['GET','POST']) # if methods are not set, Method not allowed error occurs
 def login():
     error = ''
@@ -51,6 +62,24 @@ def login():
 
     except Exception as e:
         return render_template("login.html",error=e)
+
+####################################    Register    ###########################################
+
+@app.route('/register/',methods=['GET','POST'])
+def register():
+    try:
+        form = RegistrationForm(request.form)
+
+        if request.method == "POST" and form.validate():
+            username = form.username.data
+            email = form.email.data
+            password = sha256_crypt.encrypt((str(form.password.data)))
+
+
+
+
+    except Exception as e:
+        return str(e)
 
 if __name__=="__main__":
     app.run()
