@@ -13,14 +13,14 @@ manager = Manager(app)
 
 manager.add_command('db', MigrateCommand)
 
-class Users(db.Model):
-    id = db.Column(db.Integer,primary_key = True)
+class Users():
+    id = db.Column(db.Integer(10),primary_key = True)
     username = db.Column(db.String(50))
     email = db.Column(db.String(50))
     password = db.Column(db.String(50))
     settings = db.Column(db.String(32500))
     tracking = db.Column(db.String(32500))
-    rank = db.Column(db.Integer)
+    rank = db.Column(db.Integer(3))
 
 
 if __name__ == '__main__':
