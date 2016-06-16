@@ -2,3 +2,5 @@ flask
 passlib
 MySQL-python
 wtf
+Flask-Migrate
+sqlalchemy

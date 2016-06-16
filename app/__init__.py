@@ -2,6 +2,7 @@ from flask import Flask, render_template, flash, request, url_for, redirect
 from content_management import Content
 from wtforms import Form
 from dbConnect import connection
+from wtforms import TextField, BooleanField, validators, PasswordField
 from passlib.hash import sha256_crypt
 
 TOPIC_DICT = Content()

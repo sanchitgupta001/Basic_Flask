@@ -1,1 +1,6 @@
 flask
+passlib
+MySQL-python
+wtf
+flask-migrate
+sqlalchemy
