@@ -1,9 +1,11 @@
-from flask import Flask, render_template, flash, request, url_for, redirect
+from flask import Flask, render_template, flash, request, url_for, redirect, session
 from content_management import Content
 from wtforms import Form
 from dbConnect import connection
 from wtforms import TextField, BooleanField, validators, PasswordField
 from passlib.hash import sha256_crypt
+from MySQLdb import escape_string as thwart # For escaping SQL Injection type stuff
+import gc
 
 TOPIC_DICT = Content()
 
@@ -37,7 +39,7 @@ def Method_not_found(e):
 
 #####################################    LOGIN    #############################################
 
-class RegistrationForm():
+class RegistrationForm(Form):
     username = TextField("Username", [validators.length(min = 6, max = 20),validators.Required()])
     email = TextField("Email Address", [validators.length(min = 6, max = 60), validators.Required()])
     password  = PasswordField("password", [validators.Required(),validators.EqualTo("confirm", message = "Passwords must match")])
@@ -70,17 +72,38 @@ def login():
 def register():
     try:
         form = RegistrationForm(request.form)
-
         if request.method == "POST" and form.validate():
             username = form.username.data
             email = form.email.data
-            password = sha256_crypt.encrypt((str(form.password.data)))
+            password = sha256_crypt.encrypt(str(form.password.data))
+            c, conn = connection()
+# c is the cursor here
+            x = c.execute("SELECT * FROM users WHERE username = '%s'" % (thwart(username)))
 
+            if int(x) > 0:
+                flash("That username is already taken, please choose another one")
+                return render_template("register.html",form=form)
 
+            else:
+                c.execute("INSERT INTO users (username, password, email, tracking) VALUES (%s, %s, %s, %s)",
+                (thwart(username), thwart(password), thwart(email), thwart("/introduction-to-python-programming/")))
 
+                conn.commit()   # data will not be saved in the database until this statement is executed
+                flash("Thanx For Registering with us")
+
+                c.close()
+                conn.close()
+                gc.collect() # gc : Garbage Collector
+
+                session['logged_in'] = True
+                session['username'] = username
+
+                return redirect(url_for('dashboard'))
+
+        return render_template("register.html",form = form)
 
     except Exception as e:
-        return str(e)
+          return str(e)
 
 if __name__=="__main__":
     app.run()

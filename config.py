@@ -1,6 +1,6 @@
 DEBUG = True
 SECRET_KEY = 'FsdfswsskfhAOCABSKJFNAKdfbgfgaJCNWOACNQWIKXNxbcqcnskjcnIUH287R2YRHI2132FVJBKVBJSVB'
-SQLALCHEMY_DATABASE_URI = 'mysql://root:@localhost/Users'
+SQLALCHEMY_DATABASE_URI = 'mysql+pymsql://root:@localhost/Users?unix_socket=/opt/lampp/var/mysql/mysql.sock'
 SQLALCHEMY_TRACK_MODIFICATIONS = True  # Just to suppress warnings.
 
 # For flask
