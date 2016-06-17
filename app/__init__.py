@@ -51,19 +51,25 @@ class RegistrationForm(Form):
 def login():
     error = ''
     try:
+        c, conn = connection()
         if request.method == "POST":
-            attempted_username = request.form['username']
-            attempted_password = request.form['password']
-            # flash(attempted_username)
-            # flash(attempted_password)
-            if attempted_username == "admin" and attempted_password == "password":
-                return redirect(url_for('dashboard'))
+            data = c.execute("SELECT * FROM users where username = '%s'" % (thwart(request.form['username'])))
+            data = c.fetchone()[2]
+
+            if sha256_crypt.verify(request.form['password'], data):
+                session['logged_in'] = True
+                session['username'] = request.form['username']
+
+                flash("You are now logged in...")
+                return redirect(url_for("dashboard"))
             else:
-                error = 'Invalid Credentials... Plz Try Again !!!'
+                error = "Invalid Credentials, try again."
+        gc.collect()
 
         return render_template('login.html',error=error)
 
     except Exception as e:
+        error = "Invalid Credentials, try again."
         return render_template("login.html",error=e)
 
 ####################################    Register    ###########################################
