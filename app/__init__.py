@@ -55,17 +55,21 @@ def login():
         c, conn = connection()
         if request.method == "POST":
             data = c.execute("SELECT * FROM users where username = '%s'" % (thwart(request.form['username'])))
-            data = c.fetchone()[2]
 
-            if sha256_crypt.verify(request.form['password'],data):
-                session['logged_in'] = True
-                session['username'] = request.form['username']
 
-                flash("You are now logged in...")
-                return redirect(url_for("dashboard"))
+            if (data):
+                data = c.fetchone()[2]
+                if sha256_crypt.verify(request.form['password'],data):
+                    session['logged_in'] = True
+                    session['username'] = request.form['username']
+
+                    flash("You are now logged in...")
+                    return redirect(url_for("dashboard"))
+                else:
+                    error = "Invalid Credentials, try again."
             else:
-                error = "Invalid Credentials, try again."
-        gc.collect()
+                error = "Invalid Credentials"
+            gc.collect()
 
         return render_template('login.html',error=error)
 
