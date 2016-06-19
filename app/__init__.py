@@ -6,6 +6,7 @@ from wtforms import TextField, BooleanField, validators, PasswordField
 from passlib.hash import sha256_crypt
 from MySQLdb import escape_string as thwart # For escaping SQL Injection type stuff
 import gc
+from passlib.apps import custom_app_context as pwd_context
 
 TOPIC_DICT = Content()
 
@@ -41,8 +42,8 @@ def Method_not_found(e):
 
 class RegistrationForm(Form):
     username = TextField("Username", [validators.length(min = 6, max = 20),validators.Required()])
-    email = TextField("Email Address", [validators.length(min = 6, max = 60), validators.Required()])
-    password  = PasswordField("password", [validators.Required(),validators.EqualTo("confirm", message = "Passwords must match")])
+    email = TextField("Email Address", [validators.length(min = 6, max = 50), validators.Required()])
+    password  = PasswordField("password", [validators.length(min = 6, max = 100), validators.Required(),validators.EqualTo("confirm", message = "Passwords must match")])
     confirm = PasswordField('Repeat Password')
 
 
@@ -56,7 +57,7 @@ def login():
             data = c.execute("SELECT * FROM users where username = '%s'" % (thwart(request.form['username'])))
             data = c.fetchone()[2]
 
-            if sha256_crypt.verify(request.form['password'], data):
+            if sha256_crypt.verify(request.form['password'],data):
                 session['logged_in'] = True
                 session['username'] = request.form['username']
 
@@ -81,7 +82,7 @@ def register():
         if request.method == "POST" and form.validate():
             username = form.username.data
             email = form.email.data
-            password = sha256_crypt.encrypt(str(form.password.data))
+            password = sha256_crypt.encrypt((str (form.password.data)),rounds = 12345)
             c, conn = connection()
 # c is the cursor here
             x = c.execute("SELECT * FROM users WHERE username = '%s'" % (thwart(username)))
