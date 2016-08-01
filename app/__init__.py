@@ -7,6 +7,7 @@ from passlib.hash import sha256_crypt
 from MySQLdb import escape_string as thwart # For escaping SQL Injection type stuff
 import gc
 from passlib.apps import custom_app_context as pwd_context
+from functools import wraps
 
 TOPIC_DICT = Content()
 
@@ -39,9 +40,11 @@ def login_required(f): # login_required decorator
             return f(*args, **kwargs) #arguments and keyword arguments
         else:
             flash("You need to login first")
-            return redirect(url_for('login_page'))
+            return redirect(url_for('login'))
+    return wrap
 
 @app.route("/logout/")
+@login_required
 def logout():
     session.clear()
     flash("You have been logged out!")
