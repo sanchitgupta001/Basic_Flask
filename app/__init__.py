@@ -21,9 +21,91 @@ def homepage():
 
 @app.route('/dashboard/')
 def dashboard():
+    try:
+        try:
+            client_name, settings, tracking, rank = userinformation()
+            if len(tracking) < 10:
+                tracking = "/introduction-to-python-programming/"
+            gc.collect()
+
+            if client_name == "Guest":
+                flash("Welcome Guest, feel free to browse content. Progress tracking is only available for registered users")
+                tracking = ['None']
+
+            update_user_tracking()
+
+            #completed_percentages = topic_completion_percent()
+
+            return render_template("dashboard.html",TOPIC_DICT = TOPIC_DICT)
+        except Exception, e:
+            return ((str(e),"Please report errors to test@qwerty.com"))
+    except Exception, e:
+        return ((str(e),"Please report errors to test@qwerty.com"))
 
     #flash("Flash Test !!!")
-    return render_template("dashboard.html",TOPIC_DICT = TOPIC_DICT)
+    #return render_template("dashboard.html",TOPIC_DICT = TOPIC_DICT)
+
+def userinformation():
+
+    try:
+        client_name = (session['username'])
+        guest = False
+    except:
+        guest = True
+        client_name = "Guest"
+    if not guest:
+        settings = [0,0]
+        tracking = [0,0]
+        rank = [0,0]
+        try:
+            c, conn = connection()
+            c.execute("SELECT * FROM users WHERE username = (%s)",
+                    (thwart(client_name)))
+            data = c.fetchone()
+            settings = data[4]
+            tracking = data[5]
+            rank = data[6]
+            #flash(data)
+        except Exception, e:
+            pass
+            #flash(str(e))
+    else:
+        settings = [0,0]
+        tracking = [0,0]
+        rank = [0,0]
+
+
+    return client_name, settings, tracking, rank
+
+def update_user_tracking():
+    try:
+        completed = str(request.args['completed'])
+
+        if completed in str(TOPIC_DICT.values()):
+            client_name, settings, tracking, rank = userinformation()
+
+
+            if tracking == None:
+                tracking = completed
+            else:
+                if completed not in tracking:
+                    tracking = tracking+","+completed
+
+            c,conn = connection()
+            c.execute("UPDATE users SET tracking = %s WHERE username = %s",(thwart(tracking),thwart(client_name)))
+            conn.commit()
+            c.close()
+            conn.close()
+            client_name, settings, tracking, rank = userinformation()
+
+            #flash(str(client_name))
+            #flash(str(tracking))
+        else:
+            pass
+
+    except Exception, e:
+        pass
+        #flash(str(e))
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -42,6 +124,15 @@ def login_required(f): # login_required decorator
             flash("You need to login first")
             return redirect(url_for('login'))
     return wrap
+
+@app.route("/jinjaman/")
+def jinjaman():
+    try:
+        gc.collect()
+        data = [15,'15','Python is good',"Python, Java, PHP, SQL, C++",'<p><strong>Hey There !</strong></p>']
+        return render_template('jinja-templating.html',data=data)
+    except Exception, e:
+        return (str(e))
 
 @app.route("/logout/")
 @login_required
