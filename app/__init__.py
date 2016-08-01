@@ -31,6 +31,22 @@ def page_not_found(e):
 @app.errorhandler(405)
 def Method_not_found(e):
     return render_template("405.html")
+
+def login_required(f): # login_required decorator
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        if 'logged_in' in session:
+            return f(*args, **kwargs) #arguments and keyword arguments
+        else:
+            flash("You need to login first")
+            return redirect(url_for('login_page'))
+
+@app.route("/logout/")
+def logout():
+    session.clear()
+    flash("You have been logged out!")
+    gc.collect()
+    return redirect(url_for('dashboard'))
 # @app.route('/slashboard/')
 # def slashboard():
 #     try:
@@ -88,7 +104,7 @@ def register():
             email = form.email.data
             password = sha256_crypt.encrypt((str (form.password.data)),rounds = 12345)
             c, conn = connection()
-# c is the cursor here
+            # c is the cursor here
             x = c.execute("SELECT * FROM users WHERE username = '%s'" % (thwart(username)))
 
             if int(x) > 0:
