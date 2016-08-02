@@ -134,6 +134,19 @@ def jinjaman():
     except Exception, e:
         return (str(e))
 
+@app.route("/converters/<page>/")
+@app.route("/converters/<int:page>/")
+@app.route("/converters/<float:page>/")
+@app.route("/converters/<string:page>/")
+@app.route("/converters/<path:page>/")
+def converterexample(page):
+    try:
+        gc.collect()
+        return render_template('converterexample.html',page=page)
+    except Exception, e:
+        return (str(e))
+
+
 @app.route("/logout/")
 @login_required
 def logout():
