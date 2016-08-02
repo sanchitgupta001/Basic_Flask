@@ -1,4 +1,4 @@
-from flask import Flask, render_template, flash, request, url_for, redirect, session
+from flask import Flask, render_template, flash, request, url_for, redirect, session, flash, send_file
 from content_management import Content
 from wtforms import Form
 from dbConnect import connection
@@ -162,6 +162,14 @@ def jinjaman():
         return render_template('jinja-templating.html',data=data)
     except Exception, e:
         return (str(e))
+
+@app.route("/return-file/")
+def return_file():
+    return send_file('/home/sanchit/Basic_Flask/Basic_Flask/app/static/hp.jpg',attachment_filename='hp.jpg')
+
+@app.route("/file-downloads/")
+def file_downloads():
+    return render_template('downloads.html')
 
 @app.route("/converters/<page>/")
 @app.route("/converters/<int:page>/")
