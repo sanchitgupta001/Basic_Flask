@@ -8,12 +8,26 @@ from MySQLdb import escape_string as thwart # For escaping SQL Injection type st
 import gc
 from passlib.apps import custom_app_context as pwd_context
 from functools import wraps
+import smtplib
+from flask_mail import Mail, Message
 
 TOPIC_DICT = Content()
 
 
 app = Flask(__name__)
 app.secret_key = "super secret key"
+
+# Configuration for E-Mail
+app.config.update(
+DEBUG=True,
+#EMAIL SETTINGS
+    MAIL_SERVER='smtp.gmail.com',
+    MAIL_PORT=465,
+    MAIL_USE_SSL=True,
+    MAIL_USERNAME = "yourusername@gmail.com", # Change here (Important)
+    MAIL_PASSWORD = 'yourpassword'
+)
+mail = Mail(app) # This needs to be done only after Configurations are set
 
 @app.route('/')
 def homepage():
@@ -124,6 +138,21 @@ def login_required(f): # login_required decorator
             flash("You need to login first")
             return redirect(url_for('login'))
     return wrap
+
+@app.route("/send-mail/")
+def send_mail():
+    try:
+        msg = Message("Forgot Password !!!",
+        sender="yoursendingemail@gmail.com", #yoursendingemail@gmail.com
+        recipients=["receivingemail@gmail.com"]) #receivingemail@gmail.com
+        msg.body = "Yo!\n Hello "+username+', \n You or someone else has requested that a new password be generated for this email address.'
+        #msg.html = render_template('/mails/reset-password.html',username=username, link=link)
+
+        mail.send(msg)
+        return 'Mail sent'
+
+    except Exception as e:
+        return str(e)
 
 @app.route("/jinjaman/")
 def jinjaman():
