@@ -1,4 +1,4 @@
-from flask import Flask, render_template, flash, request, url_for, redirect, session, flash, send_file, send_from_directory
+from flask import Flask, render_template, flash, request, url_for, redirect, session, flash, send_file, send_from_directory, jsonify
 from content_management import Content
 from wtforms import Form
 from dbConnect import connection
@@ -191,6 +191,29 @@ def jinjaman():
         return render_template('jinja-templating.html',data=data)
     except Exception, e:
         return (str(e))
+
+# Working with JQuery
+
+@app.route("/interactive/")
+def interactive():
+    try:
+        return render_template('interactive.html')
+    except Exception, e:
+        return (str(e))
+
+@app.route("/background_process/")
+def background_process():
+    try:
+        lang = request.args.get('proglang')
+        if str(lang).lower() == 'python':
+            return jsonify(result='You are wise')
+        else:
+            return jsonify(result='Try Again')
+    except Exception, e:
+        return (str(e))
+
+
+# File Operations
 
 @app.route("/return-file/")
 def return_file():
