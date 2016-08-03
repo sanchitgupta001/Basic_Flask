@@ -1,4 +1,4 @@
-from flask import Flask, render_template, flash, request, url_for, redirect, session, flash, send_file
+from flask import Flask, render_template, flash, request, url_for, redirect, session, flash, send_file, send_from_directory
 from content_management import Content
 from wtforms import Form
 from dbConnect import connection
@@ -6,6 +6,7 @@ from wtforms import TextField, BooleanField, validators, PasswordField
 from passlib.hash import sha256_crypt
 from MySQLdb import escape_string as thwart # For escaping SQL Injection type stuff
 import gc
+import os
 from passlib.apps import custom_app_context as pwd_context
 from functools import wraps
 import smtplib
@@ -14,7 +15,7 @@ from flask_mail import Mail, Message
 TOPIC_DICT = Content()
 
 
-app = Flask(__name__)
+app = Flask(__name__,instance_path='/home/sanchit/Basic_Flask/Basic_Flask/app/protected')
 app.secret_key = "super secret key"
 
 # Configuration for E-Mail
@@ -153,6 +154,34 @@ def send_mail():
 
     except Exception as e:
         return str(e)
+
+
+# Protected file access
+
+def special_requirement(f):
+    @wraps(f)
+    def wrap(*args,**kwargs):
+        try:
+            if 'qwerty' == session['username']:
+                return f(*args,**kwargs)
+            else:
+                flash("You do not have access to this resource")
+                return redirect(url_for('dashboard'))
+
+        except:
+            flash("You do not have access to this resource")
+            return redirect(url_for('dashboard'))
+    return wrap
+
+@app.route("/secret/<path:filename>")
+@special_requirement
+def protected(filename):
+    try:
+        return send_from_directory(os.path.join(app.instance_path,''),filename)
+
+    except Exception as e:
+        return redirect(url_for('main'))
+
 
 @app.route("/jinjaman/")
 def jinjaman():
